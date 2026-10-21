@@ -1,0 +1,41 @@
+{
+  "project_info": {
+    "project_number": "937795693519",
+    "firebase_url": "https://project-d55f227e-a5a3-4161-b06-default-rtdb.firebaseio.com",
+    "project_id": "project-d55f227e-a5a3-4161-b06",
+    "storage_bucket": "project-d55f227e-a5a3-4161-b06.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:937795693519:android:5df61a6227bd8e250b80ba",
+        "android_client_info": {
+          "package_name": "com.example.aitrading"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "937795693519-webclientid.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQI3jf_RlgapjR1FX95Z0y6LQZ1HsXb1w"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
