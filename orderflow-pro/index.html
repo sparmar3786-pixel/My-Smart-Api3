@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OrderFlow Pro — Live Footprint</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1017;--panel:#121b27;--line:#273548;--muted:#8ea0b8;--text:#e7edf6;--buy:#25c798;--sell:#ff6678;--accent:#6ea8fe}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px system-ui,-apple-system,Segoe UI,sans-serif}
+header{display:flex;gap:18px;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--line);background:#0e151e;position:sticky;top:0;z-index:5}
+.brand{font-size:18px;font-weight:750;letter-spacing:.03em}.brand span{color:var(--accent)}.meta{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.pill{padding:6px 9px;border:1px solid var(--line);border-radius:99px;color:var(--muted);font-size:12px}.dot{display:inline-block;width:7px;height:7px;background:#6c7788;border-radius:50%;margin-right:6px}.up .dot{background:var(--buy)}.down .dot{background:var(--sell)}
+main{max-width:1400px;margin:auto;padding:18px;display:grid;gap:14px}.toolbar,.stats,.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:12px}.toolbar label{color:var(--muted);font-size:12px}
+select,button{background:#0b121b;color:var(--text);border:1px solid var(--line);padding:9px 12px;border-radius:7px;font:inherit}
+button{cursor:pointer}.logout{margin-left:auto}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);overflow:hidden}
+.stat{padding:13px 15px;background:var(--panel)}.stat label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}.stat strong{font-size:20px;font-variant-numeric:tabular-nums}
+.layout{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(280px,1fr);gap:14px}.panel{overflow:hidden}.panel h2{font-size:13px;font-weight:650;margin:0;padding:13px 15px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px}
+.tablewrap{max-height:62vh;overflow:auto}table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}th{position:sticky;top:0;background:#172333;color:var(--muted);font-weight:600}th,td{text-align:right;padding:10px 12px;border-bottom:1px solid #202d3c}th:first-child,td:first-child{text-align:left}tr:nth-child(even) td{background:#101923}.buy{color:var(--buy)}.sell{color:var(--sell)}
+.bar{height:7px;background:#243243;border-radius:4px;overflow:hidden;min-width:50px}.bar span{display:block;height:100%;width:0;background:var(--buy)}.bar.sellbar span{background:var(--sell)}
+#empty{padding:25px;color:var(--muted);text-align:center}.feedline{font-size:12px;color:var(--muted);padding:10px 14px;border-top:1px solid var(--line)}
+.levels{padding:12px 15px;display:grid;gap:10px}.level{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}.level small,.note{color:var(--muted)}.level strong{font-variant-numeric:tabular-nums}.note{font-size:12px;line-height:1.5}
+@media(max-width:780px){header{align-items:flex-start;flex-direction:column}.layout{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.tablewrap{max-height:54vh}.logout{margin-left:0}}
+</style></head>
+<body>
+<header><div class="brand"><span>ORDERFLOW</span> PRO</div><div class="meta"><span id="conn" class="pill"><i class="dot"></i>CONNECTING</span><span id="ticks" class="pill">Last tick: waiting</span></div></header>
+<main>
+<div class="toolbar"><label for="symbol">INSTRUMENT</label><select id="symbol">
+<option>NIFTY 50</option><option>BANK NIFTY</option><option>FIN NIFTY</option><option>MIDCAP NIFTY</option><option>SENSEX</option><option>BANKEX</option><option>CRUDE OIL</option><option>NATURAL GAS</option><option>GOLD</option><option>SILVER</option><option>COPPER</option><option>ZINC</option>
+</select><span class="pill">LIVE FEED — AUTHENTICATED</span><button id="clear">Clear footprint</button>
+<form method="post" action="/api/logout" class="logout"><button type="submit">Sign out</button></form></div>
+<section class="stats"><div class="stat"><label>SPOT / LAST PRICE</label><strong id="last">—</strong></div><div class="stat"><label>BUY-SIDE EST. VOLUME</label><strong id="buyvol" class="buy">0</strong></div><div class="stat"><label>SELL-SIDE EST. VOLUME</label><strong id="sellvol" class="sell">0</strong></div><div class="stat"><label>EST. DELTA</label><strong id="delta">0</strong></div></section>
+<div class="layout">
+<section class="panel"><h2>Footprint by traded price <span id="rows">0 levels</span></h2><div class="tablewrap"><table><thead><tr><th>Price</th><th>Buy est.</th><th>Sell est.</th><th>Delta</th><th>Imbalance</th></tr></thead><tbody id="foot"><tr><td colspan="5" id="empty">Waiting for authenticated Angel One feed…</td></tr></tbody></table></div><div class="feedline" id="statusline">Broker status has not been confirmed yet.</div></section>
+<section class="panel"><h2>Session summary <span id="session">Waiting for ticks</span></h2><div class="levels">
+<div class="level"><div><small>Highest volume price</small><br><strong id="poc">—</strong></div><span class="pill" id="pocv">0 qty</span></div>
+<div class="level"><div><small>Largest positive delta</small><br><strong id="maxbuy" class="buy">—</strong></div><span class="pill" id="maxbuyv">0 delta</span></div>
+<div class="level"><div><small>Largest negative delta</small><br><strong id="maxsell" class="sell">—</strong></div><span class="pill" id="maxsellv">0 delta</span></div>
+<p class="note">Buy/sell classification is an estimate from cumulative SmartAPI volume and the price tick rule. This is not exchange-provided aggressor-side order flow or a full bid/ask order book. Do not treat it as an automatic trade instruction.</p>
+</div></section></div></main>
+<script>
+(function(){
+const $=id=>document.getElementById(id), data=new Map();
+let selected=$('symbol').value,lastSpot=null,lastPrice=null,lastTick=null,ws=null;
+const n=v=>Number(v||0).toLocaleString('en-IN',{maximumFractionDigits:2});
+function conn(ok,label){$('conn').className='pill '+(ok?'up':'down');$('conn').innerHTML='<i class="dot"></i>'+label;}
+function render(){
+ const levels=Array.from(data.entries()).filter(x=>x[0].startsWith(selected+'|')).map(x=>({price:Number(x[0].split('|')[1]),...x[1]})).sort((a,b)=>b.price-a.price).slice(0,120);
+ const buys=levels.reduce((s,x)=>s+x.buy,0),sells=levels.reduce((s,x)=>s+x.sell,0),delta=buys-sells;
+ $('buyvol').textContent=n(buys);$('sellvol').textContent=n(sells);$('delta').textContent=(delta>0?'+':'')+n(delta);$('delta').className=delta>=0?'buy':'sell';
+ $('last').textContent=lastSpot!==null&&['NIFTY 50','BANK NIFTY','FIN NIFTY','MIDCAP NIFTY','SENSEX','BANKEX'].includes(selected)?n(lastSpot):(lastPrice!==null?n(lastPrice):'—');
+ $('rows').textContent=levels.length+' levels';$('session').textContent=levels.length?'Footprint accumulating':'Waiting for ticks';
+ if(!levels.length){$('foot').innerHTML='<tr><td colspan="5" id="empty">No ticks yet for '+selected+'. Check broker feed and market hours.</td></tr>';return;}
+ const max=Math.max(1,...levels.map(x=>x.buy+x.sell));
+ $('foot').innerHTML=levels.map(x=>{
+ const d=x.buy-x.sell,tot=x.buy+x.sell,imb=x.sell===0?(x.buy?'BUY':'—'):(x.buy/x.sell>=3?'BUY 3:1+':x.sell/x.buy>=3?'SELL 3:1+':'—'),width=Math.max(3,Math.round(tot/max*100));
+ return '<tr><td><strong>'+n(x.price)+'</strong></td><td class="buy">'+n(x.buy)+'</td><td class="sell">'+n(x.sell)+'</td><td class="'+(d>=0?'buy':'sell')+'">'+(d>0?'+':'')+n(d)+'</td><td><div class="bar '+(d<0?'sellbar':'')+'"><span style="width:'+width+'%"></span></div><small>'+imb+'</small></td></tr>';
+ }).join('');
+ const poc=levels.slice().sort((a,b)=>(b.buy+b.sell)-(a.buy+a.sell))[0],pos=levels.slice().sort((a,b)=>(b.buy-b.sell)-(a.buy-a.sell))[0],neg=levels.slice().sort((a,b)=>(a.buy-a.sell)-(b.buy-b.sell))[0];
+ $('poc').textContent=poc?n(poc.price):'—';$('pocv').textContent=n(poc?poc.buy+poc.sell:0)+' qty';
+ $('maxbuy').textContent=pos?n(pos.price):'—';$('maxbuyv').textContent=(pos?'+':'')+n(pos?pos.buy-pos.sell:0)+' delta';
+ $('maxsell').textContent=neg?n(neg.price):'—';$('maxsellv').textContent=n(neg?neg.buy-neg.sell:0)+' delta';
+}
+function connect(){
+ ws=new WebSocket((location.protocol==='https:'?'wss://':'ws://')+location.host+'/ws');
+ ws.onopen=()=>conn(true,'WEBSOCKET OPEN');
+ ws.onclose=()=>{conn(false,'DISCONNECTED — RECONNECTING');setTimeout(connect,2500);};
+ ws.onerror=()=>conn(false,'WEBSOCKET ERROR');
+ ws.onmessage=e=>{
+ let m;try{m=JSON.parse(e.data);}catch(_){return;}
+ if(m.type==='status'||m.type==='heartbeat'){
+  conn(!!m.feed_connected,m.feed_connected?'ANGEL ONE LIVE':'BROKER FEED DISCONNECTED');
+  $('statusline').textContent=m.last_error||(m.feed_connected?'Connected; waiting for ticks.':'Backend reachable but broker feed is not connected.');
+  if(m.last_tick_at)lastTick=m.last_tick_at;$('ticks').textContent='Last tick: '+(lastTick||'waiting');return;
+ }
+ if(m.s===selected&&Number.isFinite(Number(m.spot)))lastSpot=Number(m.spot);
+ if(m.s===selected&&Number.isFinite(Number(m.p))){
+  lastPrice=Number(m.p);const key=selected+'|'+Number(m.p).toFixed(2),row=data.get(key)||{buy:0,sell:0},qty=Math.max(0,Number(m.q)||0);
+  if(Number(m.b)===1)row.buy+=qty;else row.sell+=qty;data.set(key,row);
+ }
+ if(m.s===selected)render();
+ if(m.p!==undefined||m.spot!==undefined){lastTick=new Date().toLocaleTimeString();$('ticks').textContent='Last tick: '+lastTick;}
+ };
+}
+$('symbol').addEventListener('change',()=>{selected=$('symbol').value;lastPrice=null;lastSpot=null;render();});
+$('clear').addEventListener('click',()=>{for(const key of Array.from(data.keys()))if(key.startsWith(selected+'|'))data.delete(key);render();});
+render();connect();
+})();
+</script></body></html>
